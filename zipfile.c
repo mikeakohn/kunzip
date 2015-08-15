@@ -159,14 +159,14 @@ int create_dirs(char *filename)
   while (path[s] != '/' && path[s] != '\\') { s--; }
   path[s] = 0;
 
-#ifdef DEBUG
+#ifdef DEBUG_ZIP
 printf("path=%s\n", path);
 #endif
 
   if (stat(path, &buf) != 0)
   {
     if (create_dirs(path) == -1) { return -1; }
-#ifdef DEBUG
+#ifdef DEBUG_ZIP
     printf("Creating directory: %s\n", path);
 #endif
 #ifndef DLL
@@ -198,7 +198,7 @@ int read_zip_header(FILE *in, struct zip_local_file_header_t *local_file_header)
   return 0;
 }
 
-#ifdef DEBUG
+#ifdef DEBUG_ZIP
 int print_zip_header(struct zip_local_file_header_t *local_file_header)
 {
   const char *compression_method = "";
@@ -288,7 +288,7 @@ int kunzip_file(FILE *in, char *base_dir)
 
   marker = ftell(in);
 
-#ifdef DEBUG
+#ifdef DEBUG_ZIP
   print_zip_header(&local_file_header);
 #endif
 
@@ -468,11 +468,11 @@ int kunzip_count_files(char *zip_filename)
         break;
       }
 
-#ifdef DEBUG
+#ifdef DEBUG_ZIP
 printf("offset=%ld\n", ftell(in));
 #endif
       inflate(in, out, &checksum);
-#ifdef DEBUG
+#ifdef DEBUG_ZIP
 printf("offset=%ld\n", ftell(in));
 #endif
       fclose(out);
@@ -482,7 +482,7 @@ printf("offset=%ld\n", ftell(in));
       local_file_header.compressed_size = read_int(in);
       local_file_header.uncompressed_size = read_int(in);
 
-#ifdef DEBUG
+#ifdef DEBUG_ZIP
       printf("*CRC-32: 0x%08x\n", local_file_header.crc_32);
       printf("*Compressed Size: %d\n", local_file_header.compressed_size);
       printf("*Uncompressed Size: %d\n", local_file_header.uncompressed_size);

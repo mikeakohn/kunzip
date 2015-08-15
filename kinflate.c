@@ -92,7 +92,7 @@ static struct huffman_tree_t *huffman_tree_len_static = 0;
 static int crc_built = 0;
 static unsigned int crc_table[256];
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 int print_binary(int b, int l)
 {
   if ((l - 1) != 0)
@@ -270,7 +270,7 @@ int load_fixed_huffman(struct huffman_t *huffman, struct huffman_tree_t **huffma
   struct huffman_tree_t *huffman_tree;
   int next_leaf;
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("load_fixed_huffman()\n");
 #endif
 
@@ -339,7 +339,7 @@ int load_codes(FILE *in, struct bitstream_t *bitstream, int *lengths, int count,
   int bits,max_bits;
   int next_leaf,curr_leaf;
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("Entering load_codes()\n");
 #endif
 
@@ -357,7 +357,7 @@ printf("Entering load_codes()\n");
 
       curr_code = (bitstream->holding >> (bitstream->bitptr - hclen_code_length[t]));
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 /*
 print_binary(curr_code,hclen_code_length[t]);
 printf(" ");
@@ -441,7 +441,7 @@ printf("\n");
     }
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("r=%d count=%d\n", r, count);
 #endif
 
@@ -473,7 +473,7 @@ printf("r=%d count=%d\n", r, count);
   {
     if (lengths[t] != 0)
     {
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 //printf(">> %d %d %d    next_leaf=%d\n", t, lengths[t], codes[t], next_leaf);
 #endif
 
@@ -518,7 +518,7 @@ printf("r=%d count=%d\n", r, count);
     }
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("Leaving load_codes()\n");
 #endif
 
@@ -559,7 +559,7 @@ int load_dynamic_huffman(FILE *in, struct huffman_t *huffman, struct bitstream_t
 
 /* printf("%d %d %d\n",hclen,sizeof(struct huffman_tree_t),hclen*sizeof(struct huffman_tree_t)); */
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("hlit: %d\n", hlit);
 printf("hdist: %d\n", hdist);
 printf("hclen: %d\n", hclen);
@@ -586,7 +586,7 @@ printf("hclen: %d\n", hclen);
     bitstream->holding = bitstream->holding & (( 1 <<bitstream->bitptr) - 1);
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
   printf("\nCode Lengths\n");
   printf("------------------\n");
   for (t = 0; t < 19; t++)
@@ -601,7 +601,7 @@ printf("hclen: %d\n", hclen);
     bl_count[hclen_code_lengths[t]]++;
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("\nbl_count[]\n");
 printf("------------------\n");
 for (t = 0; t < 8; t++)
@@ -619,7 +619,7 @@ printf("\n");
     next_code[bits] = code;
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("next_code[]\n");
 printf("------------------\n");
 for (t = 0; t < bits; t++)
@@ -640,7 +640,7 @@ printf("\n");
     }
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("Huffman1 Table\n");
 printf("------------------\n");
 for (t = 0; t < 19; t++)
@@ -662,7 +662,7 @@ printf("\n");
 
   load_codes(in, bitstream,huffman->len, hlit, hclen_code_lengths, hclen_code, huffman_tree_len);
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 #if 0
 printf("\nLiteral Table\n");
 printf("------------------\n");
@@ -709,7 +709,7 @@ int decompress(FILE *in, struct huffman_t *huffman, struct bitstream_t *bitstrea
   int window_ptr;
   int curr_leaf;
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("decompress()\n");
 printf("holding=%d bitptr=%d\n",bitstream->holding,bitstream->bitptr);
 #endif
@@ -735,7 +735,7 @@ printf("holding=%d bitptr=%d\n",bitstream->holding,bitstream->bitptr);
         bitstream->holding = getc(in);
         bitstream->bitptr = 8;
       }
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("%d  <%02x>  %d %d   (holding=%d  bitptr=%d)\n",
   curr_leaf,
   huffman_tree_len[curr_leaf].code,
@@ -770,7 +770,7 @@ fflush(stdout);
 
     /* if (t==288) { printf("Unknown huffman code\n"); return -1; } */
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("------------------------\n");
 printf("code=%d\n", code);
 #endif
@@ -778,7 +778,7 @@ printf("code=%d\n", code);
     if (code < 256)
     {
       /* putc(code,out); */
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 if (code >= 32 && code <= 128)
 { printf("output %d %c\n", code, code); }
   else
@@ -795,14 +795,14 @@ if (code >= 32 && code <= 128)
       else
     if (code == 256)
     {
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("end-of-block %d\n", code);
 #endif
       break;
     }
       else
     {
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("LZ77 TIME %d\n", code);
 fflush(stdout);
 #endif
@@ -816,7 +816,7 @@ fflush(stdout);
           bitstream->bitptr += 8;
         }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("len=%d  extra_bits=%d  extra bits value=%d\n", len, length_extra_bits[code], bitstream->holding >> (bitstream->bitptr - length_extra_bits[code]));
 fflush(stdout);
 #endif
@@ -838,7 +838,7 @@ fflush(stdout);
         code = reverse[code & 255] >> 3;
         bitstream->bitptr -= 5;
         bitstream->holding >>= 5;
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("DIST code=%d\n",code);
 fflush(stdout);
 #endif
@@ -857,7 +857,7 @@ fflush(stdout);
             bitstream->holding = getc(in);
             bitstream->bitptr = 8;
           }
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("%d  (%c)  %d %d   (holding=%d  bitptr=%d)\n", curr_leaf, huffman_tree_len[curr_leaf].code, huffman_tree_len[curr_leaf].left, huffman_tree_len[curr_leaf].right,bitstream->holding, bitstream->bitptr);
 fflush(stdout);
 #endif
@@ -896,7 +896,7 @@ fflush(stdout);
           bitstream->bitptr+= 8;
         }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("code=%d  distance=%d  num_extra_bits=%d extra_bits=%d\n", code, dist_codes[code], dist_extra_bits[code], (bitstream->holding >> (bitstream->bitptr-dist_extra_bits[code])
 ));
 #endif
@@ -907,7 +907,7 @@ printf("code=%d  distance=%d  num_extra_bits=%d extra_bits=%d\n", code, dist_cod
         bitstream->holding >>= dist_extra_bits[code];
       }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("len: %d dist: %d\n", len, dist);
 #endif
 /*
@@ -952,7 +952,7 @@ exit(0);
         }
       }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("\n");
 #endif
     }
@@ -988,7 +988,7 @@ int inflate(FILE *in, FILE *out, uint32_t *checksum)
 
   huffman.window_ptr = 0;
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("\nStarting at %d 0x%x\n",(int)ftell(in),(int)ftell(in));
 #endif
 
@@ -996,7 +996,7 @@ printf("\nStarting at %d 0x%x\n",(int)ftell(in),(int)ftell(in));
   CMF = getc(in);
   FLG = getc(in);
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("   CMF: %d\n", CMF);
 printf("   FLG: %d\n", FLG);
 printf("    CM: %d\n", CMF & 15);
@@ -1034,7 +1034,7 @@ printf("FLEVEL: %d\n\n", (FLG > 6) & 3);
       bitstream.bitptr += 8;
     }
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("holding=%d\n", bitstream.holding);
 #endif
 
@@ -1044,7 +1044,7 @@ printf("holding=%d\n", bitstream.holding);
     bitstream.bitptr -= 3;
     bitstream.holding = bitstream.holding & ((1 << bitstream.bitptr) - 1);
 
-#ifdef DEBUG
+#ifdef DEBUG_INFLATE
 printf("comp_method=%d  bfinal=%d\n", comp_method, bfinal);
 #endif
 
