@@ -43,7 +43,7 @@ struct utimbuf
 
 int utime(char *outname, struct utimbuf *my_utimbuf);
 
-char *strcasestr_m(char *hejstack, char *needle)
+static char *strcasestr_m(char *hejstack, char *needle)
 {
   int hejlen,neelen;
   int t,r;
@@ -119,7 +119,7 @@ int ch;
 }
 */
 
-unsigned int copy_file(FILE *in, FILE *out, int len)
+static int32_t copy_file(FILE *in, FILE *out, int len)
 {
   unsigned char buffer[BUFFER_SIZE];
   uint32_t checksum;
@@ -145,7 +145,7 @@ unsigned int copy_file(FILE *in, FILE *out, int len)
   return checksum ^ 0xffffffff;
 }
 
-int create_dirs(char *filename)
+static int create_dirs(char *filename)
 {
   struct stat buf;
   char path[1024];
@@ -179,10 +179,87 @@ printf("path=%s\n", path);
   return 0;
 }
 
-int read_zip_header(FILE *in, struct zip_local_file_header_t *local_file_header)
+#ifdef DEBUG_ZIP
+static void print_central_directory(struct zip_central_directory_t *zip_central_directory)
 {
-  local_file_header->signature = read_int(in);
-  if (local_file_header->signature != 0x04034b50) { return -1; }
+  printf("---------------------------------------------\n");
+  printf("Central Directory\n");
+  printf("---------------------------------------------\n");
+  printf("             signature: %08x\n", zip_central_directory->signature);
+  printf("               version: %d\n", zip_central_directory->version);
+  printf("        version_needed: %d\n", zip_central_directory->version_needed);
+  printf("                 flags: %d\n", zip_central_directory->flags);
+  printf("           compression: %d\n", zip_central_directory->compression);
+  printf("              mod_time: %d\n", zip_central_directory->mod_time);
+  printf("              mod_date: %d\n", zip_central_directory->mod_date);
+  printf("                crc_32: %08x\n", zip_central_directory->crc_32);
+  printf("       compressed_size: %d\n", zip_central_directory->compressed_size);
+  printf("     uncompressed_size: %d\n", zip_central_directory->uncompressed_size);
+  printf("      file_name_length: %d\n", zip_central_directory->file_name_length);
+  printf("    extra_field_length: %d\n", zip_central_directory->extra_field_length);
+  printf("   file_comment_length: %d\n", zip_central_directory->file_comment_length);
+  printf("        disk_num_start: %d\n", zip_central_directory->disk_num_start);;
+  printf("         internal_attr: %d\n", zip_central_directory->internal_attr);
+  printf("         external_attr: %d\n", zip_central_directory->external_attr);
+  printf(" offset_of_local_header: %d\n", zip_central_directory->offset_of_local_header);
+}
+#endif
+
+static int read_central_directory(FILE *in, struct zip_central_directory_t *zip_central_directory)
+{
+  zip_central_directory->signature = read_int(in);
+  zip_central_directory->version = read_word(in);
+  zip_central_directory->version_needed = read_word(in);
+  zip_central_directory->flags = read_word(in);
+  zip_central_directory->compression = read_word(in);
+  zip_central_directory->mod_time = read_word(in);
+  zip_central_directory->mod_date = read_word(in);
+  zip_central_directory->crc_32 = read_int(in);
+  zip_central_directory->compressed_size = read_int(in);
+  zip_central_directory->uncompressed_size = read_int(in);
+  zip_central_directory->file_name_length = read_word(in);
+  zip_central_directory->extra_field_length = read_word(in);
+  zip_central_directory->file_comment_length = read_word(in);
+  zip_central_directory->disk_num_start = read_word(in);
+  zip_central_directory->internal_attr = read_word(in);
+  zip_central_directory->external_attr = read_int(in);
+  zip_central_directory->offset_of_local_header = read_int(in);
+
+  fseek(in, zip_central_directory->file_name_length +
+            zip_central_directory->extra_field_length +
+            zip_central_directory->file_comment_length, SEEK_CUR);
+
+  return 0;
+}
+
+static int read_zip_header(FILE *in, struct zip_local_file_header_t *local_file_header)
+{
+  struct zip_central_directory_t zip_central_directory;
+
+  while(1) 
+  {
+    local_file_header->signature = read_int(in);
+
+    if (local_file_header->signature == 0x02014b50)
+    {
+      fseek(in, -4, SEEK_CUR);
+      read_central_directory(in, &zip_central_directory);
+#ifdef DEBUG_ZIP
+print_central_directory(&zip_central_directory);
+#endif
+      continue;
+    }
+
+    if (local_file_header->signature == 0x05064b50)
+    {
+      // End of central directory
+      return -1;
+    }
+
+    if (local_file_header->signature != 0x04034b50) { return -1; }
+
+    break;
+  };
 
   local_file_header->version = read_word(in);
   local_file_header->general_purpose_bit_flag = read_word(in);
@@ -226,13 +303,10 @@ int print_zip_header(struct zip_local_file_header_t *local_file_header)
     compression_method = compression_methods[local_file_header->compression_method];
   }
 
-  printf("ZIP LOCAL FILE HEADER\n");
   printf("----------------------------------\n");
-  printf("Signature: %02x%02x%02x%02x\n",
-                               ((local_file_header->signature >> 24) & 255),
-                               ((local_file_header->signature >> 16) & 255),
-                               ((local_file_header->signature >> 8) & 255),
-                               (local_file_header->signature & 255));
+  printf("Local File Header\n");
+  printf("----------------------------------\n");
+  printf("Signature: %08x\n", local_file_header->signature);
   printf("Version: %d\n", local_file_header->version);
   printf("General Purpose Bit Flag: %d (",
     local_file_header->general_purpose_bit_flag);
@@ -263,9 +337,61 @@ int print_zip_header(struct zip_local_file_header_t *local_file_header)
 }
 #endif
 
+static int skip_file(FILE *in, struct zip_local_file_header_t *local_file_header)
+{
+  uint32_t checksum;
+
+  if ((local_file_header->general_purpose_bit_flag & (1<<3)) == 0)
+  {
+    // Data descriptor flag is not set so compressed size is accurate
+    // and the file can be skipped.
+    fseek(in, local_file_header->compressed_size +
+              local_file_header->file_name_length +
+              local_file_header->extra_field_length, SEEK_CUR);
+  }
+    else
+  {
+    // Skip the rest of the local_file_header.
+    fseek(in, local_file_header->file_name_length +
+              local_file_header->extra_field_length, SEEK_CUR);
+
+    // Decompress the data into nothing so the end of the compressed data
+    // can be found.
+    FILE *out = fopen("/dev/null", "wb");
+    if (out == NULL)
+    {
+      return -1;
+    }
+
+#ifdef DEBUG_ZIP
+printf("offset=%ld\n", ftell(in));
+#endif
+    inflate(in, out, &checksum);
+#ifdef DEBUG_ZIP
+printf("offset=%ld\n", ftell(in));
+#endif
+    fclose(out);
+
+    uint32_t signature = read_int(in);
+    if (signature != 0x08074b50) { return -1; }
+
+    local_file_header->crc_32 = read_int(in);
+    local_file_header->compressed_size = read_int(in);
+    local_file_header->uncompressed_size = read_int(in);
+
+#ifdef DEBUG_ZIP
+    printf("*CRC-32: 0x%08x\n", local_file_header->crc_32);
+    printf("*Compressed Size: %d\n", local_file_header->compressed_size);
+    printf("*Uncompressed Size: %d\n", local_file_header->uncompressed_size);
+#endif
+  }
+
+  return 0;
+}
+
 int kunzip_file(FILE *in, char *base_dir)
 {
-  char outname[1024];
+  char outname[4096];
   FILE *out;
   struct zip_local_file_header_t local_file_header;
   int ret_code;
@@ -275,7 +401,7 @@ int kunzip_file(FILE *in, char *base_dir)
   struct utimbuf my_utimbuf;
   struct tm my_tm;
 
-  ret_code=0;
+  ret_code = 0;
 
   if (read_zip_header(in, &local_file_header) == -1) { return -1; }
 
@@ -295,11 +421,11 @@ int kunzip_file(FILE *in, char *base_dir)
   if (base_dir[strlen(base_dir) - 1] != '/' &&
       base_dir[strlen(base_dir) - 1] != '\\')
   {
-    sprintf(outname, "%s/%s", base_dir, local_file_header.file_name);
+    snprintf(outname, sizeof(outname), "%s/%s", base_dir, local_file_header.file_name);
   }
     else
   {
-    sprintf(outname, "%s%s", base_dir, local_file_header.file_name);
+    snprintf(outname, sizeof(outname), "%s%s", base_dir, local_file_header.file_name);
   }
 
   if (create_dirs(outname) != 0)
@@ -308,16 +434,17 @@ int kunzip_file(FILE *in, char *base_dir)
     return -2;
   }
 
-#ifndef QUIET
+#ifdef DEBUG_UNZIP
   printf("unzipping: %s\n", outname);
 #endif
 
-  if (local_file_header.uncompressed_size != 0)
+  if (local_file_header.uncompressed_size != 0 ||
+     (local_file_header.general_purpose_bit_flag & (1<<3)) != 0)
   {
     out = fopen(outname, "wb+");
     if (out == NULL)
     {
-      printf("Error: Cannot open output file: %s\n",outname);
+      printf("Error: Cannot open output file: %s\n", outname);
       return -3;
     }
 
@@ -328,7 +455,6 @@ int kunzip_file(FILE *in, char *base_dir)
       else
     {
       inflate(in, out, &checksum);
-/* printf("start=%d end=%d total=%d should_be=%d\n",marker,(int)ftell(in),(int)ftell(in)-marker,local_file_header.compressed_size); */
     }
 
     fclose(out);
@@ -352,7 +478,7 @@ Bit  0 -  4  Day
 That's MS-DOS time format btw.. which zip files use.. 
 
 */
-    /* memset(&my_tm,0,sizeof(struct tm)); */
+  /* memset(&my_tm,0,sizeof(struct tm)); */
 
     my_tm.tm_sec = (local_file_header.last_mod_file_time & 31) * 2;
     my_tm.tm_min = (local_file_header.last_mod_file_time >> 5) & 63;
@@ -369,25 +495,31 @@ That's MS-DOS time format btw.. which zip files use..
     my_utimbuf.actime = date_time;
     my_utimbuf.modtime = date_time;
     utime(outname, &my_utimbuf);
-
-    if (checksum != local_file_header.crc_32)
-    {
-      printf("Checksums don't match: %d %d\n",
-             checksum, local_file_header.crc_32);
-      ret_code = -4;
-    }
   }
 
   free(local_file_header.file_name);
   free(local_file_header.extra_field);
 
-  fseek(in, marker + local_file_header.compressed_size, SEEK_SET);
-
-  if ((local_file_header.general_purpose_bit_flag & 8) != 0)
+  // If there's a data descriptor section, read it.
+  if ((local_file_header.general_purpose_bit_flag & (1<<3)) != 0)
   {
-    read_int(in);
-    read_int(in);
-    read_int(in);
+    uint32_t signature = read_int(in);
+    if (signature != 0x08074b50) { return -1; }
+
+    local_file_header.crc_32 = read_int(in);
+    local_file_header.compressed_size = read_int(in);
+    local_file_header.uncompressed_size = read_int(in);
+  }
+    else
+  {
+    fseek(in, marker + local_file_header.compressed_size, SEEK_SET);
+  }
+
+  if (checksum != local_file_header.crc_32)
+  {
+    printf("Checksums don't match: %d %d\n",
+           checksum, local_file_header.crc_32);
+    ret_code = -4;
   }
 
   return ret_code;
@@ -435,7 +567,6 @@ int kunzip_count_files(char *zip_filename)
 {
   FILE *in;
   struct zip_local_file_header_t local_file_header;
-  uint32_t checksum;
   int count;
   int i;
 
@@ -449,45 +580,7 @@ int kunzip_count_files(char *zip_filename)
     i = read_zip_header(in, &local_file_header);
     if (i == -1) break;
 
-    if ((local_file_header.general_purpose_bit_flag & (1<<3)) == 0)
-    {
-      // Data descriptor flag is not set so compressed size is accurate
-      // and the file can be skipped.
-      fseek(in, local_file_header.compressed_size +
-                local_file_header.file_name_length +
-                local_file_header.extra_field_length, SEEK_CUR);
-    }
-      else
-    {
-      fseek(in, local_file_header.file_name_length +
-                local_file_header.extra_field_length, SEEK_CUR);
-
-      FILE *out = fopen("/dev/null", "wb");
-      if (out == NULL)
-      {
-        break;
-      }
-
-#ifdef DEBUG_ZIP
-printf("offset=%ld\n", ftell(in));
-#endif
-      inflate(in, out, &checksum);
-#ifdef DEBUG_ZIP
-printf("offset=%ld\n", ftell(in));
-#endif
-      fclose(out);
-
-      read_int(in);
-      local_file_header.crc_32 = read_int(in);
-      local_file_header.compressed_size = read_int(in);
-      local_file_header.uncompressed_size = read_int(in);
-
-#ifdef DEBUG_ZIP
-      printf("*CRC-32: 0x%08x\n", local_file_header.crc_32);
-      printf("*Compressed Size: %d\n", local_file_header.compressed_size);
-      printf("*Uncompressed Size: %d\n", local_file_header.uncompressed_size);
-#endif
-    }
+    if (skip_file(in, &local_file_header) != 0) { break; }
 
     count++;
   }
@@ -518,9 +611,7 @@ int kunzip_get_offset_by_number(char *zip_filename, int file_count)
     i = read_zip_header(in, &local_file_header);
     if (i == -1) break;
 
-    fseek(in, local_file_header.compressed_size +
-              local_file_header.file_name_length +
-              local_file_header.extra_field_length, SEEK_CUR);
+    if (skip_file(in, &local_file_header) != 0) { break; }
 
     count++;
   }
@@ -576,7 +667,7 @@ int kunzip_get_offset_by_name(char *zip_filename, char *compressed_filename, int
       read_chars(in, name, local_file_header.file_name_length);
       name[local_file_header.file_name_length]=0;
 
-      fseek(in,marker,SEEK_SET); /* and part 2 of nasty code */
+      fseek(in, marker, SEEK_SET); /* and part 2 of nasty code */
 
       if ((match_flags&1)==1)
       {
@@ -600,10 +691,7 @@ int kunzip_get_offset_by_name(char *zip_filename, char *compressed_filename, int
       }
     }
 
-    fseek(in, local_file_header.compressed_size +
-              local_file_header.file_name_length +
-              local_file_header.extra_field_length, SEEK_CUR);
-
+    if (skip_file(in, &local_file_header) != 0) { break; }
   }
 
   if (name_size != 0) free(name);

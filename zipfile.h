@@ -19,24 +19,47 @@ me and we can work something out.
 #ifndef _ZIPFILE_H
 #define _ZIPFILE_H
 
+#include <stdint.h>
+
 #define VERSION "Version August 15, 2015"
 #define COPYRIGHT "Copyright 2005-2015 - Michael Kohn <mike@mikekohn.net>"
 
 struct zip_local_file_header_t
 {
-  unsigned int signature;
+  uint32_t signature;
   int version;
   int general_purpose_bit_flag;
   int compression_method;
   int last_mod_file_time;
   int last_mod_file_date;
-  unsigned int crc_32;
+  uint32_t crc_32;
   int compressed_size;
   int uncompressed_size;
   int file_name_length;
   int extra_field_length;
   char *file_name;
   unsigned char *extra_field;
+};
+
+struct zip_central_directory_t
+{
+  uint32_t signature;
+  uint16_t version;
+  uint16_t version_needed;
+  uint16_t flags;
+  uint16_t compression;
+  uint16_t mod_time;
+  uint16_t mod_date;
+  uint32_t crc_32;
+  uint32_t compressed_size;
+  uint32_t uncompressed_size;
+  uint16_t file_name_length;
+  uint16_t extra_field_length;
+  uint16_t file_comment_length;
+  uint16_t disk_num_start;
+  uint16_t internal_attr;
+  uint32_t external_attr;
+  uint32_t offset_of_local_header;
 };
 
 #endif
