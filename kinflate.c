@@ -525,7 +525,12 @@ printf("Leaving load_codes()\n");
   return 0;
 }
 
-int load_dynamic_huffman(FILE *in, struct huffman_t *huffman, struct bitstream_t *bitstream, struct huffman_tree_t *huffman_tree_len, struct huffman_tree_t *huffman_tree_dist)
+int load_dynamic_huffman(
+  FILE *in,
+  struct huffman_t *huffman,
+  struct bitstream_t *bitstream,
+  struct huffman_tree_t *huffman_tree_len,
+  struct huffman_tree_t *huffman_tree_dist)
 {
   int hlit,hdist,hclen;
   int hclen_code_lengths[19];
@@ -700,7 +705,13 @@ for (t = 0; t < hlit; t++)
   return 0;
 }
 
-int decompress(FILE *in, struct huffman_t *huffman, struct bitstream_t *bitstream, struct huffman_tree_t *huffman_tree_len, struct huffman_tree_t *huffman_tree_dist, FILE *out)
+int decompress(
+  FILE *in,
+  struct huffman_t *huffman,
+  struct bitstream_t *bitstream,
+  struct huffman_tree_t *huffman_tree_len,
+  struct huffman_tree_t *huffman_tree_dist,
+  FILE *out)
 {
   int code=0,len,dist;
   int t,r;
@@ -858,7 +869,12 @@ fflush(stdout);
             bitstream->bitptr = 8;
           }
 #ifdef DEBUG_INFLATE
-printf("%d  (%c)  %d %d   (holding=%d  bitptr=%d)\n", curr_leaf, huffman_tree_len[curr_leaf].code, huffman_tree_len[curr_leaf].left, huffman_tree_len[curr_leaf].right,bitstream->holding, bitstream->bitptr);
+printf("%d  <%02x>  %d %d   (holding=%d  bitptr=%d)\n",
+  curr_leaf,
+  huffman_tree_len[curr_leaf].code,
+  huffman_tree_len[curr_leaf].left,
+  huffman_tree_len[curr_leaf].right,
+  bitstream->holding, bitstream->bitptr);
 fflush(stdout);
 #endif
 
@@ -956,6 +972,17 @@ exit(0);
 printf("\n");
 #endif
     }
+  }
+
+#ifdef DEBUG_INFLATE
+printf("decompress() END\n");
+printf("holding=%d bitptr=%d\n",bitstream->holding,bitstream->bitptr);
+#endif
+
+  // FIXME - Need to check why this ever happens.
+  if (bitstream->bitptr >=8)
+  {
+    fseek(in, -(bitstream->bitptr / 8), SEEK_CUR);
   }
 
   huffman->window_ptr = window_ptr;

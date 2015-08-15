@@ -1,7 +1,7 @@
 
 #DEBUG_INFLATE=-DDEBUG_INFLATE
 #DEBUG_ZIP=-DDEBUG_ZIP
-FLAGS=-s -O3 -Wall $(DEBUG_INFATE) $(DEBUG_ZIP)
+FLAGS=-s -O3 -Wall $(DEBUG_INFLATE) $(DEBUG_ZIP)
 CC=gcc
 
 #PATH=/opt/xmingw/bin:/usr/bin
