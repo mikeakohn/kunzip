@@ -22,7 +22,7 @@ me and we can work something out.
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifndef DLL
+#ifndef WINDOWS
 #include <utime.h>
 #endif
 #include <time.h>
@@ -33,7 +33,7 @@ me and we can work something out.
 #include "kinflate.h"
 #include "kunzip.h"
 
-#ifdef DLL
+#ifdef WINDOWS
 
 struct utimbuf
 {
@@ -169,7 +169,7 @@ printf("path=%s\n", path);
 #ifdef DEBUG_ZIP
     printf("Creating directory: %s\n", path);
 #endif
-#ifndef DLL
+#ifndef WINDOWS
     if (mkdir(path, 0777) != 0) { return -1; }
 #else
     if (mkdir(path) != 0) { return -1; }
@@ -357,7 +357,11 @@ static int skip_file(FILE *in, struct zip_local_file_header_t *local_file_header
 
     // Decompress the data into nothing so the end of the compressed data
     // can be found.
+#ifndef WINDOWS
     FILE *out = fopen("/dev/null", "wb");
+#else
+    FILE *out = fopen("nul", "wb");
+#endif
     if (out == NULL)
     {
       return -1;
@@ -683,7 +687,7 @@ int kunzip_get_offset_by_name(char *zip_filename, char *compressed_filename, int
           if (strstr(name,compressed_filename)!=0) break;
         }
           else
-#ifdef DLL
+#ifdef WINDOWS
         { if (strcasestr_m(name, compressed_filename) !=0 ) { break; } }
 #else
         { if (strcasestr(compressed_filename, name) != 0) { break; } }

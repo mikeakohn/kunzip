@@ -4,10 +4,9 @@
 FLAGS=-s -O3 -Wall $(DEBUG_INFLATE) $(DEBUG_ZIP)
 CC=gcc
 
-#PATH=/opt/xmingw/bin:/usr/bin
-#CC=i686-w64-mingw32-gcc
-#DLLWRAP=i686-w64-mingw32-dllwrap
-#WINDRES=i686-w64-mingw32-windres
+WINPREFIX=i686-w64-mingw32-
+WINDRES=$(WINPREFIX)windres
+DLLWRAP=$(WINPREFIX)dllwrap
 
 default:
 	$(CC) -c fileio.c $(FLAGS)
@@ -16,9 +15,9 @@ default:
 	$(CC) -o kunzip kunzip.c fileio.o kinflate.o zipfile.o $(FLAGS)
 
 dll:
-	$(CC) -c fileio.c $(FLAGS) -m32 -mrtd
-	$(CC) -c kinflate.c $(FLAGS) -DZIP -m32 -mrtd
-	$(CC) -c zipfile.c $(FLAGS) -DQUIET -DDLL -m32 -mrtd
+	$(WINPREFIX)$(CC) -c fileio.c $(FLAGS) -m32 -mrtd -DWINDOWS
+	$(WINPREFIX)$(CC) -c kinflate.c $(FLAGS) -DZIP -m32 -mrtd -DWINDOWS
+	$(WINPREFIX)$(CC) -c zipfile.c $(FLAGS) -DQUIET -m32 -mrtd -DWINDOWS
 	$(WINDRES) -i kunzip.rc -o kunzipres.o
 	$(DLLWRAP) --def kunzip.def --dllname kunzip -o kunzip.dll \
 	        fileio.o kinflate.o kunzipres.o zipfile.o $(FLAGS)
