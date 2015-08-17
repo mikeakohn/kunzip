@@ -400,7 +400,7 @@ int kunzip_file(FILE *in, char *base_dir)
   struct zip_local_file_header_t local_file_header;
   int ret_code;
   time_t date_time;
-  uint32_t checksum;
+  uint32_t checksum = 0;
   long marker;
   struct utimbuf my_utimbuf;
   struct tm my_tm;
@@ -554,7 +554,7 @@ long kunzip_next(char *zip_filename, char *base_dir, int offset)
   int i;
   long marker;
 
-  in=fopen(zip_filename, "rb");
+  in = fopen(zip_filename, "rb");
   if (in == NULL) { return -1; }
 
   fseek(in, offset, SEEK_SET);
