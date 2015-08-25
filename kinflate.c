@@ -720,7 +720,7 @@ int decompress(
   int code=0,len,dist;
   int t,r;
   unsigned char *window;
-  struct huffman_tree_t *curr_huffman_leaf;
+  //struct huffman_tree_t *curr_huffman_leaf;
   int window_ptr;
   int curr_leaf;
 
@@ -738,7 +738,7 @@ printf("holding=%d bitptr=%d\n",bitstream->holding,bitstream->bitptr);
 
   while(1)
   {
-    curr_huffman_leaf = huffman_tree_len;
+    //curr_huffman_leaf = huffman_tree_len;
     curr_leaf = 0;
 
     while(1)
@@ -860,7 +860,7 @@ fflush(stdout);
       }
         else
       {
-        curr_huffman_leaf = huffman_tree_len;
+        //curr_huffman_leaf = huffman_tree_len;
         curr_leaf = 0;
 
         while(1)
