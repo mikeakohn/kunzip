@@ -205,7 +205,7 @@ unsigned int get_alder(FILE *out)
 
 int reverse_bitstream(struct bitstream_t *bitstream)
 {
-  unsigned int i;
+  uint32_t i;
 
   i = reverse[((bitstream->holding >> 24) & 0xff)] |
      (reverse[((bitstream->holding >> 16) & 0xff)] << 8) |
@@ -983,12 +983,6 @@ printf("decompress() END\n");
 printf("holding=%d bitptr=%d\n",bitstream->holding,bitstream->bitptr);
 #endif
 
-  // FIXME - Need to check why this ever happens.
-  if (bitstream->bitptr >=8)
-  {
-    fseek(in, -(bitstream->bitptr / 8), SEEK_CUR);
-  }
-
   huffman->window_ptr = window_ptr;
 
   reverse_bitstream(bitstream);
@@ -1146,15 +1140,16 @@ printf("comp_method=%d  bfinal=%d\n", comp_method, bfinal);
     huffman.checksum = crc32(huffman.window, huffman.window_ptr, huffman.checksum);
   }
 
-/*
-  if (buffer != 0)
-  { free(buffer); }
-*/
-
-  if (huffman_tree_len != 0) { free(huffman_tree_len); }
-  if (huffman_tree_dist != 0) { free(huffman_tree_dist); }
+  if (huffman_tree_len != NULL) { free(huffman_tree_len); }
+  if (huffman_tree_dist != NULL) { free(huffman_tree_dist); }
 
   *checksum = huffman.checksum ^ 0xffffffff;
+
+  // FIXME - Need to check why this ever happens.
+  if (bitstream.bitptr >= 8)
+  {
+    fseek(in, -(bitstream.bitptr / 8), SEEK_CUR);
+  }
 
 /*
   huffman_tree_len = 0;
