@@ -207,23 +207,23 @@ static void print_central_directory(struct zip_central_directory_t *zip_central_
 
 static int read_central_directory(FILE *in, struct zip_central_directory_t *zip_central_directory)
 {
-  zip_central_directory->signature = read_int(in);
-  zip_central_directory->version = read_word(in);
-  zip_central_directory->version_needed = read_word(in);
-  zip_central_directory->flags = read_word(in);
-  zip_central_directory->compression = read_word(in);
-  zip_central_directory->mod_time = read_word(in);
-  zip_central_directory->mod_date = read_word(in);
-  zip_central_directory->crc_32 = read_int(in);
-  zip_central_directory->compressed_size = read_int(in);
-  zip_central_directory->uncompressed_size = read_int(in);
-  zip_central_directory->file_name_length = read_word(in);
-  zip_central_directory->extra_field_length = read_word(in);
-  zip_central_directory->file_comment_length = read_word(in);
-  zip_central_directory->disk_num_start = read_word(in);
-  zip_central_directory->internal_attr = read_word(in);
-  zip_central_directory->external_attr = read_int(in);
-  zip_central_directory->offset_of_local_header = read_int(in);
+  zip_central_directory->signature = read_int32(in);
+  zip_central_directory->version = read_int16(in);
+  zip_central_directory->version_needed = read_int16(in);
+  zip_central_directory->flags = read_int16(in);
+  zip_central_directory->compression = read_int16(in);
+  zip_central_directory->mod_time = read_int16(in);
+  zip_central_directory->mod_date = read_int16(in);
+  zip_central_directory->crc_32 = read_int32(in);
+  zip_central_directory->compressed_size = read_int32(in);
+  zip_central_directory->uncompressed_size = read_int32(in);
+  zip_central_directory->file_name_length = read_int16(in);
+  zip_central_directory->extra_field_length = read_int16(in);
+  zip_central_directory->file_comment_length = read_int16(in);
+  zip_central_directory->disk_num_start = read_int16(in);
+  zip_central_directory->internal_attr = read_int16(in);
+  zip_central_directory->external_attr = read_int32(in);
+  zip_central_directory->offset_of_local_header = read_int32(in);
 
   fseek(in, zip_central_directory->file_name_length +
             zip_central_directory->extra_field_length +
@@ -238,7 +238,7 @@ static int read_zip_header(FILE *in, struct zip_local_file_header_t *local_file_
 
   while(1) 
   {
-    local_file_header->signature = read_int(in);
+    local_file_header->signature = read_int32(in);
 
     if (local_file_header->signature == 0x02014b50)
     {
@@ -261,16 +261,16 @@ print_central_directory(&zip_central_directory);
     break;
   };
 
-  local_file_header->version = read_word(in);
-  local_file_header->general_purpose_bit_flag = read_word(in);
-  local_file_header->compression_method = read_word(in);
-  local_file_header->last_mod_file_time = read_word(in);
-  local_file_header->last_mod_file_date = read_word(in);
-  local_file_header->crc_32 = read_int(in);
-  local_file_header->compressed_size = read_int(in);
-  local_file_header->uncompressed_size = read_int(in);
-  local_file_header->file_name_length = read_word(in);
-  local_file_header->extra_field_length = read_word(in);
+  local_file_header->version = read_int16(in);
+  local_file_header->general_purpose_bit_flag = read_int16(in);
+  local_file_header->compression_method = read_int16(in);
+  local_file_header->last_mod_file_time = read_int16(in);
+  local_file_header->last_mod_file_date = read_int16(in);
+  local_file_header->crc_32 = read_int32(in);
+  local_file_header->compressed_size = read_int32(in);
+  local_file_header->uncompressed_size = read_int32(in);
+  local_file_header->file_name_length = read_int16(in);
+  local_file_header->extra_field_length = read_int16(in);
 
   return 0;
 }
@@ -376,12 +376,12 @@ printf("offset=%ld\n", ftell(in));
 #endif
     fclose(out);
 
-    uint32_t signature = read_int(in);
+    uint32_t signature = read_int32(in);
     if (signature != 0x08074b50) { return -1; }
 
-    local_file_header->crc_32 = read_int(in);
-    local_file_header->compressed_size = read_int(in);
-    local_file_header->uncompressed_size = read_int(in);
+    local_file_header->crc_32 = read_int32(in);
+    local_file_header->compressed_size = read_int32(in);
+    local_file_header->uncompressed_size = read_int32(in);
 
 #ifdef DEBUG_ZIP
     printf("*CRC-32: 0x%08x\n", local_file_header->crc_32);
@@ -507,12 +507,12 @@ That's MS-DOS time format btw.. which zip files use..
   // If there's a data descriptor section, read it.
   if ((local_file_header.general_purpose_bit_flag & (1<<3)) != 0)
   {
-    uint32_t signature = read_int(in);
+    uint32_t signature = read_int32(in);
     if (signature != 0x08074b50) { return -1; }
 
-    local_file_header.crc_32 = read_int(in);
-    local_file_header.compressed_size = read_int(in);
-    local_file_header.uncompressed_size = read_int(in);
+    local_file_header.crc_32 = read_int32(in);
+    local_file_header.compressed_size = read_int32(in);
+    local_file_header.uncompressed_size = read_int32(in);
   }
     else
   {

@@ -1045,7 +1045,7 @@ printf("FLEVEL: %d\n\n", (FLG > 6) & 3);
 
   if ((FLG & 32) != 0)
   {
-    DICT = read_int_b(in);
+    DICT = read_int32_b(in);
   }
 
   if (((CMF * 256 + FLG) % 31) != 0)
@@ -1085,9 +1085,9 @@ printf("comp_method=%d  bfinal=%d\n", comp_method, bfinal);
       bitstream.holding = 0;
       bitstream.bitptr = 0;
 
-      block_len = read_word(in);
+      block_len = read_int16(in);
 
-      t = read_word(in) ^ 0xffff;
+      t = read_int16(in) ^ 0xffff;
 
       if (block_len != t)
       {

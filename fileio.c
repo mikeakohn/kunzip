@@ -19,7 +19,7 @@ me and we can work something out.
 #include <stdio.h>
 #include <stdlib.h>
 
-int write_int(FILE *out, int n)
+int write_int32(FILE *out, int n)
 {
   putc((n & 0xff), out);
   putc(((n >> 8) & 0xff), out);
@@ -29,7 +29,7 @@ int write_int(FILE *out, int n)
   return 0;
 }
 
-int write_word(FILE *out, int n)
+int write_int16(FILE *out, int n)
 {
   putc((n & 0xff), out);
   putc(((n >> 8) & 0xff), out);
@@ -37,7 +37,7 @@ int write_word(FILE *out, int n)
   return 0;
 }
 
-int read_int(FILE *in)
+int read_int32(FILE *in)
 {
   int c;
 
@@ -49,7 +49,7 @@ int read_int(FILE *in)
   return c;
 }
 
-int read_word(FILE *in)
+int read_int16(FILE *in)
 {
   int c;
 
@@ -86,7 +86,7 @@ int write_chars(FILE *out, char *s)
   return 0;
 }
 
-int write_int_b(FILE *out, int n)
+int write_int32_b(FILE *out, int n)
 {
   putc(((n >> 24) & 0xff), out);
   putc(((n >> 16) & 0xff), out);
@@ -96,7 +96,7 @@ int write_int_b(FILE *out, int n)
   return 0;
 }
 
-int write_word_b(FILE *out, int n)
+int write_int16_b(FILE *out, int n)
 {
   putc(((n >> 8) & 0xff), out);
   putc((n & 0xff), out);
@@ -104,7 +104,7 @@ int write_word_b(FILE *out, int n)
   return 0;
 }
 
-int read_int_b(FILE *in)
+int read_int32_b(FILE *in)
 {
   int c;
 
@@ -116,7 +116,7 @@ int read_int_b(FILE *in)
   return c;
 }
 
-int read_word_b(FILE *in)
+int read_int16_b(FILE *in)
 {
   int c;
 
