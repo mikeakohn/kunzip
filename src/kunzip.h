@@ -27,6 +27,8 @@ to the library.  If you need help, feel free to email Michael Kohn.
 #ifndef _KUNZIP_H
 #define _KUNZIP_H
 
+#include <time.h>
+
 #ifdef __cplusplus
 extern "C"
 {
