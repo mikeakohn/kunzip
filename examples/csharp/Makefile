@@ -1,0 +1,5 @@
+
+default:
+	mcs TestKunzip.cs
+
+
