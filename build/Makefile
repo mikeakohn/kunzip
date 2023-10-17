@@ -13,9 +13,9 @@ DLLWRAP=$(WINPREFIX)dllwrap
 default: $(OBJECTS)
 	$(CC) -o ../kunzip ../src/kunzip.c $(OBJECTS) $(FLAGS)
 
-%.o: %.cxx %.h
-	$(CXX) -c $< -o $*.o \
-	   $(CFLAGS)
+%.o: %.c %.h
+	$(CC) -c $< -o $*.o \
+	   $(FLAGS)
 
 old:
 	$(CC) -c fileio.c $(FLAGS)
