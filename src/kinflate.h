@@ -4,9 +4,9 @@ kunzip (unzipping library)
 
 Author: Michael Kohn
  Email: mike@mikekohn.net
-   Web: http://www.mikekohn.net/
+   Web: https://www.mikekohn.net/
 
-Copyright 2005-2015 by Michael Kohn
+Copyright 2005-2023 by Michael Kohn
 
 This package is licensed under the LGPL. You are free to use this library
 in both commercial and non-commercial applications as long as you dynamically

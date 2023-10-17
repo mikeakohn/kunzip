@@ -4,15 +4,15 @@ kunzip (unzipping library)
 
 Author: Michael Kohn
  Email: mike@mikekohn.net
-   Web: http://www.mikekohn.net/
+   Web: https://www.mikekohn.net/
 
-Copyright 2005-2015 by Michael Kohn
+Copyright 2005-2023 by Michael Kohn
 
 This package is licensed under the LGPL. You are free to use this library
 in both commercial and non-commercial applications as long as you dynamically
 link to it. If you statically link this library you must also release your
 software under the LGPL. If you need more flexibility in the license email
-me and we can work something out. 
+me and we can work something out.
 
 */
 
@@ -179,7 +179,7 @@ printf("path=%s\n", path);
   return 0;
 }
 
-#ifdef DEBUG_ZIP
+#ifdef DEBUG_UNZIP
 static void print_central_directory(struct zip_central_directory_t *zip_central_directory)
 {
   printf("---------------------------------------------\n");
@@ -236,7 +236,7 @@ static int read_zip_header(FILE *in, struct zip_local_file_header_t *local_file_
 {
   struct zip_central_directory_t zip_central_directory;
 
-  while(1) 
+  while(1)
   {
     local_file_header->signature = read_int32(in);
 
@@ -244,7 +244,7 @@ static int read_zip_header(FILE *in, struct zip_local_file_header_t *local_file_
     {
       fseek(in, -4, SEEK_CUR);
       read_central_directory(in, &zip_central_directory);
-#ifdef DEBUG_ZIP
+#ifdef DEBUG_UNZIP
 print_central_directory(&zip_central_directory);
 #endif
       continue;
@@ -306,9 +306,11 @@ int print_zip_header(struct zip_local_file_header_t *local_file_header)
   printf("----------------------------------\n");
   printf("Local File Header\n");
   printf("----------------------------------\n");
-  printf("Signature: %08x\n", local_file_header->signature);
-  printf("Version: %d\n", local_file_header->version);
-  printf("General Purpose Bit Flag: %d (",
+  printf("               Signature: %08x\n", local_file_header->signature);
+  printf("                 Version: %d 0x%04x\n",
+    local_file_header->version,
+    local_file_header->version);
+  printf("General Purpose Bit Flag: 0x%04x (",
     local_file_header->general_purpose_bit_flag);
   if ((flags & (1<<0)) != 0) { printf(" encrypted"); }
   if ((flags & (1<<1)) != 0) { printf(" compression1"); }
@@ -321,17 +323,17 @@ int print_zip_header(struct zip_local_file_header_t *local_file_header)
   if ((flags & (1<<12)) != 0) { printf(" reserved12"); }
   if ((flags & (1<<13)) != 0) { printf(" masked_header"); }
   printf(" )\n");
-  printf("Compression Method: %d (%s)\n",
+  printf("      Compression Method: %d (%s)\n",
     local_file_header->compression_method,
     compression_method);
-  printf("Last Mod File Time: %d\n", local_file_header->last_mod_file_time);
-  printf("Last Mod File Date: %d\n", local_file_header->last_mod_file_date);
-  printf("CRC-32: 0x%08x\n", local_file_header->crc_32);
-  printf("Compressed Size: %d\n", local_file_header->compressed_size);
-  printf("Uncompressed Size: %d\n", local_file_header->uncompressed_size);
-  printf("File Name Length: %d\n", local_file_header->file_name_length);
-  printf("Extra Field Length: %d\n", local_file_header->extra_field_length);
-  printf("File Name: %s\n", local_file_header->file_name);
+  printf("      Last Mod File Time: %d\n", local_file_header->last_mod_file_time);
+  printf("      Last Mod File Date: %d\n", local_file_header->last_mod_file_date);
+  printf("                  CRC-32: 0x%08x\n", local_file_header->crc_32);
+  printf("         Compressed Size: %d\n", local_file_header->compressed_size);
+  printf("       Uncompressed Size: %d\n", local_file_header->uncompressed_size);
+  printf("        File Name Length: %d\n", local_file_header->file_name_length);
+  printf("      Extra Field Length: %d\n", local_file_header->extra_field_length);
+  printf("               File Name: %s\n", local_file_header->file_name);
 
   return 0;
 }
@@ -475,11 +477,11 @@ Bit  0 -  4  Seconds / 2
 and the date in another WORD with the following structure :
 Bit  0 -  4  Day
      5 -  8  Month
-     9 - 15  Years since 1980 
+     9 - 15  Years since 1980
 
 ^^^ PUKE!!!!!!!!!!!!
 
-That's MS-DOS time format btw.. which zip files use.. 
+That's MS-DOS time format btw.. which zip files use..
 
 */
   /* memset(&my_tm,0,sizeof(struct tm)); */

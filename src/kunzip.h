@@ -4,15 +4,15 @@ kunzip (unzipping library)
 
 Author: Michael Kohn
  Email: mike@mikekohn.net
-   Web: http://www.mikekohn.net/
+   Web: https://www.mikekohn.net/
 
-Copyright 2005-2015 by Michael Kohn
+Copyright 2005-2023 by Michael Kohn
 
 This package is licensed under the LGPL. You are free to use this library
 in both commercial and non-commercial applications as long as you dynamically
 link to it. If you statically link this library you must also release your
 software under the LGPL. If you need more flexibility in the license email
-me and we can work something out. 
+me and we can work something out.
 
 ABOUT THIS FILE:
 
@@ -37,7 +37,7 @@ extern "C"
 /*
 
 kunzip_inflate_init - Must be called before any uncompressing is done.
-                      Only needs to be called once. 
+                      Only needs to be called once.
 
 */
 
@@ -109,7 +109,7 @@ Example:
 
 kunzip_get_offset_by_number("test.zip",0); // should return an offset of 0
 kunzip_get_offset_by_number("test.zip",1); // should return an offset to the
-                                              second file in the archive 
+                                              second file in the archive
 
 
 */

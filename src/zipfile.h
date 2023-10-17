@@ -4,15 +4,15 @@ kunzip (unzipping library)
 
 Author: Michael Kohn
  Email: mike@mikekohn.net
-   Web: http://www.mikekohn.net/
+   Web: https://www.mikekohn.net/
 
-Copyright 2005-2015 by Michael Kohn
+Copyright 2005-2023 by Michael Kohn
 
 This package is licensed under the LGPL. You are free to use this library
 in both commercial and non-commercial applications as long as you dynamically
 link to it. If you statically link this library you must also release your
 software under the LGPL. If you need more flexibility in the license email
-me and we can work something out. 
+me and we can work something out.
 
 */
 
@@ -21,8 +21,8 @@ me and we can work something out.
 
 #include <stdint.h>
 
-#define VERSION "Version August 15, 2015"
-#define COPYRIGHT "Copyright 2005-2015 - Michael Kohn <mike@mikekohn.net>"
+#define VERSION "Version October 17, 2023"
+#define COPYRIGHT "Copyright 2005-2023 - Michael Kohn <mike@mikekohn.net>"
 
 struct zip_local_file_header_t
 {

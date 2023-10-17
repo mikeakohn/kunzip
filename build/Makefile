@@ -15,7 +15,7 @@ default: $(OBJECTS)
 
 %.o: %.c %.h
 	$(CC) -c $< -o $*.o \
-	   $(FLAGS)
+	   $(FLAGS) -DZIP
 
 old:
 	$(CC) -c fileio.c $(FLAGS)
