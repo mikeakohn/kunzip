@@ -363,6 +363,7 @@ int load_codes(
 {
   int r, t, c, x;
   int code;
+  int curr_code;
 
 #ifdef DEBUG_INFLATE
 printf("Entering load_codes()\n");
@@ -372,8 +373,6 @@ printf("Entering load_codes()\n");
 
   while (r < count)
   {
-    int curr_code;
-
     for (t = 0; t < 19; t++)
     {
       if (hclen_code_length[t] == 0) { continue; }
@@ -472,14 +471,27 @@ printf("\n");
 printf("r=%d count=%d\n", r, count);
 #endif
 
-#ifdef DEBUG_INFLATE
-printf("Entering build_table()\n");
-#endif
+  return 0;
+}
 
+int build_table(
+  FILE *in,
+  struct bitstream_t *bitstream,
+  int *lengths,
+  int count,
+  int *hclen_code_length,
+  int *hclen_code,
+  struct huffman_tree_t *huffman_tree)
+{
   int bl_count[512];
   int next_code[512];
   int next_leaf, curr_leaf;
   int bits, max_bits;
+  int t, x, r, code;
+
+#ifdef DEBUG_INFLATE
+printf("Entering build_table()\n");
+#endif
 
   // Time to load the codes.
   memset(bl_count, 0, count * sizeof(int));
@@ -516,7 +528,7 @@ printf("Entering build_table()\n");
 
       curr_leaf = 0;
 
-      x = 1 << (lengths[t] -1);
+      x = 1 << (lengths[t] - 1);
       for (r = 0; r < lengths[t]; r++)
       {
         if ((code & x) == 0)
@@ -710,11 +722,33 @@ printf("\n");
     hclen_code,
     huffman_tree_len);
 
+  build_table(
+    in,
+    bitstream,
+
+    huffman->len,
+    hlit,
+
+    hclen_code_lengths,
+    hclen_code,
+    huffman_tree_len);
+
   // load distant tables.
 
   if (hdist != 0)
   {
     load_codes(
+      in,
+      bitstream,
+
+      huffman->dist_len,
+      hdist,
+
+      hclen_code_lengths,
+      hclen_code,
+      huffman_tree_dist);
+
+    build_table(
       in,
       bitstream,
 
