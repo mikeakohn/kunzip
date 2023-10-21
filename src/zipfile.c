@@ -179,7 +179,7 @@ printf("path=%s\n", path);
   return 0;
 }
 
-#ifdef DEBUG_UNZIP
+#ifdef DEBUG_ZIP
 static void print_central_directory(struct zip_central_directory_t *zip_central_directory)
 {
   printf("---------------------------------------------\n");
@@ -244,7 +244,7 @@ static int read_zip_header(FILE *in, struct zip_local_file_header_t *local_file_
     {
       fseek(in, -4, SEEK_CUR);
       read_central_directory(in, &zip_central_directory);
-#ifdef DEBUG_UNZIP
+#ifdef DEBUG_ZIP
 print_central_directory(&zip_central_directory);
 #endif
       continue;
@@ -440,7 +440,7 @@ int kunzip_file(FILE *in, char *base_dir)
     return -2;
   }
 
-#ifdef DEBUG_UNZIP
+#ifdef DEBUG_ZIP
   printf("unzipping: %s\n", outname);
 #endif
 

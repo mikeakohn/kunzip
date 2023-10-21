@@ -764,7 +764,7 @@ int decompress(
   struct huffman_tree_t *huffman_tree_dist,
   FILE *out)
 {
-  int code=0,len,dist;
+  int code = 0, len, dist;
   int t,r;
   uint8_t *window;
   int window_ptr;
@@ -1152,7 +1152,9 @@ printf("comp_method=%d  bfinal=%d\n", comp_method, bfinal);
         load_fixed_huffman(&huffman, &huffman_tree_len_static);
       }
 
-      decompress(in, &huffman, &bitstream, huffman_tree_len_static, 0, out);
+      huffman.dist_huff_count = 0;
+
+      decompress(in, &huffman, &bitstream, huffman_tree_len_static, NULL, out);
     }
       else
     if (comp_method == 1)
