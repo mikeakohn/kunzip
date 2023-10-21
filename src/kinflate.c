@@ -362,11 +362,7 @@ int load_codes(
   struct huffman_tree_t *huffman_tree)
 {
   int r, t, c, x;
-  int code, curr_code;
-  int bl_count[512];
-  int next_code[512];
-  int bits, max_bits;
-  int next_leaf, curr_leaf;
+  int code;
 
 #ifdef DEBUG_INFLATE
 printf("Entering load_codes()\n");
@@ -376,6 +372,8 @@ printf("Entering load_codes()\n");
 
   while (r < count)
   {
+    int curr_code;
+
     for (t = 0; t < 19; t++)
     {
       if (hclen_code_length[t] == 0) { continue; }
@@ -474,6 +472,15 @@ printf("\n");
 printf("r=%d count=%d\n", r, count);
 #endif
 
+#ifdef DEBUG_INFLATE
+printf("Entering build_table()\n");
+#endif
+
+  int bl_count[512];
+  int next_code[512];
+  int next_leaf, curr_leaf;
+  int bits, max_bits;
+
   // Time to load the codes.
   memset(bl_count, 0, count * sizeof(int));
 
@@ -546,10 +553,6 @@ printf("r=%d count=%d\n", r, count);
     }
   }
 
-#ifdef DEBUG_INFLATE
-printf("Leaving load_codes()\n");
-#endif
-
   return 0;
 }
 
@@ -560,7 +563,7 @@ int load_dynamic_huffman(
   struct huffman_tree_t *huffman_tree_len,
   struct huffman_tree_t *huffman_tree_dist)
 {
-  int hlit,hdist,hclen;
+  int hlit, hdist, hclen;
   int hclen_code_lengths[19];
   int hclen_code[19];
   int bl_count[19];
@@ -603,7 +606,7 @@ printf("hclen: %d\n", hclen);
   memset(bl_count, 0, 19 * sizeof(int));
   /* memset(next_code, 0, 19 * sizeof(int)); */
 
-  /* load the first huffman table */
+  // Load the first huffman table.
 
   for (t = 0; t < hclen; t++)
   {
@@ -613,10 +616,10 @@ printf("hclen: %d\n", hclen);
       bitstream->bitptr += 8;
     }
 
-    hclen_code_lengths[dyn_huff_trans[t]] = (bitstream->holding >> (bitstream->bitptr - 3));
-    hclen_code_lengths[dyn_huff_trans[t]] = reverse[hclen_code_lengths[dyn_huff_trans[t]]] >> 5;
+    const uint32_t value = bitstream->holding >> (bitstream->bitptr - 3);
+    hclen_code_lengths[dyn_huff_trans[t]] = reverse[value] >> 5;
     bitstream->bitptr -= 3;
-    bitstream->holding = bitstream->holding & (( 1 <<bitstream->bitptr) - 1);
+    bitstream->holding = bitstream->holding & ((1 << bitstream->bitptr) - 1);
   }
 
 #ifdef DEBUG_INFLATE
@@ -646,6 +649,7 @@ printf("\n");
 
   code = 0;
   bl_count[0] = 0;
+
   for (bits = 1; bits <= 7; bits++)
   {
     code = (code + bl_count[bits - 1]) << 1;
@@ -678,7 +682,8 @@ printf("Huffman1 Table\n");
 printf("------------------\n");
 for (t = 0; t < 19; t++)
 {
-  printf("%d  %d %d ", t, hclen_code[t],hclen_code_lengths[t]);
+  printf("%d  %d %d ", t, hclen_code[t], hclen_code_lengths[t]);
+
   if (hclen_code_lengths[t] != 0)
   {
     print_binary(hclen_code[t], hclen_code_lengths[t]);
@@ -697,8 +702,10 @@ printf("\n");
   load_codes(
     in,
     bitstream,
+
     huffman->len,
     hlit,
+
     hclen_code_lengths,
     hclen_code,
     huffman_tree_len);
@@ -710,8 +717,10 @@ printf("\n");
     load_codes(
       in,
       bitstream,
+
       huffman->dist_len,
       hdist,
+
       hclen_code_lengths,
       hclen_code,
       huffman_tree_dist);
