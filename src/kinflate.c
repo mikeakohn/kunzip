@@ -29,13 +29,13 @@ me and we can work something out.
 
 struct bitstream_t
 {
-  unsigned int holding;
+  uint32_t holding;
   int bitptr;
 };
 
 struct huffman_t
 {
-  unsigned char window[WINDOW_SIZE];
+  uint8_t window[WINDOW_SIZE];
   int window_ptr;
   uint32_t checksum;
   int len[288];
@@ -50,47 +50,64 @@ struct huffman_tree_t
   int16_t right;
 };
 
-int length_codes[29] = { 3,4,5,6,7,8,9,10,11,13,15,17,19,
-                         23,27,31,35,43,51,59,67,83,99,115,
-                         131,163,195,227,258 };
+int length_codes[29] =
+{
+  3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19,
+  23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115,
+  131, 163, 195, 227, 258
+};
 
-int length_extra_bits[29] = { 0,0,0,0,0,0,0,0,1,1,1,1,
-                              2,2,2,2,3,3,3,3,4,4,4,4,
-                              5,5,5,5,0 };
+int length_extra_bits[29] =
+{
+  0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+  2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4,
+  5, 5, 5, 5, 0
+};
 
-int dist_codes[30] = { 1,2,3,4,5,7,9,13,17,25,
-                             33,49,65,97,129,193,257,385,513,769,
-                             1025,1537,2049,3073,4097,6145,8193,
-                             12289,16385,24577 };
+int dist_codes[30] =
+{
+  1, 2, 3, 4, 5, 7, 9, 13, 17, 25,
+  33, 49, 65, 97, 129, 193, 257, 385, 513, 769,
+  1025, 1537, 2049, 3073, 4097, 6145, 8193,
+  12289, 16385, 24577
+};
 
-int dist_extra_bits[30] = { 0,0,0,0,1,1,2,2,3,3,
-                            4,4,5,5,6,6,7,7,8,8,
-                            9,9,10,10,11,11,12,12,13,13 };
+int dist_extra_bits[30] =
+{
+  0, 0, 0, 0, 1, 1, 2, 2, 3, 3,
+  4, 4, 5, 5, 6, 6, 7, 7, 8, 8,
+  9, 9, 10, 10, 11, 11, 12, 12, 13, 13
+};
 
-int dyn_huff_trans[19] = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5,
-                           11, 4, 12, 3, 13, 2, 14, 1, 15 };
+int dyn_huff_trans[19] =
+{
+  16, 17, 18, 0, 8, 7, 9, 6, 10, 5,
+  11, 4, 12, 3, 13, 2, 14, 1, 15
+};
 
-unsigned char reverse[256] = {
-0, 128, 64, 192, 32, 160, 96, 224, 16, 144, 80, 208, 48, 176, 112, 240,
-8, 136, 72, 200, 40, 168, 104, 232, 24, 152, 88, 216, 56, 184, 120, 248,
-4, 132, 68, 196, 36, 164, 100, 228, 20, 148, 84, 212, 52, 180, 116, 244,
-12, 140, 76, 204, 44, 172, 108, 236, 28, 156, 92, 220, 60, 188, 124, 252,
-2, 130, 66, 194, 34, 162, 98, 226, 18, 146, 82, 210, 50, 178, 114, 242,
-10, 138, 74, 202, 42, 170, 106, 234, 26, 154, 90, 218, 58, 186, 122, 250,
-6, 134, 70, 198, 38, 166, 102, 230, 22, 150, 86, 214, 54, 182, 118, 246,
-14, 142, 78, 206, 46, 174, 110, 238, 30, 158, 94, 222, 62, 190, 126, 254,
-1, 129, 65, 193, 33, 161, 97, 225, 17, 145, 81, 209, 49, 177, 113, 241,
-9, 137, 73, 201, 41, 169, 105, 233, 25, 153, 89, 217, 57, 185, 121, 249,
-5, 133, 69, 197, 37, 165, 101, 229, 21, 149, 85, 213, 53, 181, 117, 245,
-13, 141, 77, 205, 45, 173, 109, 237, 29, 157, 93, 221, 61, 189, 125, 253,
-3, 131, 67, 195, 35, 163, 99, 227, 19, 147, 83, 211, 51, 179, 115, 243,
-11, 139, 75, 203, 43, 171, 107, 235, 27, 155, 91, 219, 59, 187, 123, 251,
-7, 135, 71, 199, 39, 167, 103, 231, 23, 151, 87, 215, 55, 183, 119, 247,
-15, 143, 79, 207, 47, 175, 111, 239, 31, 159, 95, 223, 63, 191, 127, 255 };
+uint8_t reverse[256] =
+{
+  0, 128, 64, 192, 32, 160, 96, 224, 16, 144, 80, 208, 48, 176, 112, 240,
+  8, 136, 72, 200, 40, 168, 104, 232, 24, 152, 88, 216, 56, 184, 120, 248,
+  4, 132, 68, 196, 36, 164, 100, 228, 20, 148, 84, 212, 52, 180, 116, 244,
+  12, 140, 76, 204, 44, 172, 108, 236, 28, 156, 92, 220, 60, 188, 124, 252,
+  2, 130, 66, 194, 34, 162, 98, 226, 18, 146, 82, 210, 50, 178, 114, 242,
+  10, 138, 74, 202, 42, 170, 106, 234, 26, 154, 90, 218, 58, 186, 122, 250,
+  6, 134, 70, 198, 38, 166, 102, 230, 22, 150, 86, 214, 54, 182, 118, 246,
+  14, 142, 78, 206, 46, 174, 110, 238, 30, 158, 94, 222, 62, 190, 126, 254,
+  1, 129, 65, 193, 33, 161, 97, 225, 17, 145, 81, 209, 49, 177, 113, 241,
+  9, 137, 73, 201, 41, 169, 105, 233, 25, 153, 89, 217, 57, 185, 121, 249,
+  5, 133, 69, 197, 37, 165, 101, 229, 21, 149, 85, 213, 53, 181, 117, 245,
+  13, 141, 77, 205, 45, 173, 109, 237, 29, 157, 93, 221, 61, 189, 125, 253,
+  3, 131, 67, 195, 35, 163, 99, 227, 19, 147, 83, 211, 51, 179, 115, 243,
+  11, 139, 75, 203, 43, 171, 107, 235, 27, 155, 91, 219, 59, 187, 123, 251,
+  7, 135, 71, 199, 39, 167, 103, 231, 23, 151, 87, 215, 55, 183, 119, 247,
+  15, 143, 79, 207, 47, 175, 111, 239, 31, 159, 95, 223, 63, 191, 127, 255
+};
 
 static struct huffman_tree_t *huffman_tree_len_static = NULL;
 static int crc_built = 0;
-static unsigned int crc_table[256];
+static uint32_t crc_table[256];
 
 #ifdef DEBUG_INFLATE
 int print_binary(int b, int l)
@@ -108,12 +125,12 @@ int print_binary(int b, int l)
 
 int build_crc32()
 {
-  unsigned int c;
+  uint32_t c;
   int n,k;
 
   for (n = 0; n < 256; n++)
   {
-    c = (unsigned int) n;
+    c = (uint32_t)n;
 
     for (k = 0; k < 8; k++)
     {
@@ -130,7 +147,7 @@ int build_crc32()
   return 0;
 }
 
-unsigned int crc32(unsigned char *buffer, int len, unsigned int crc)
+uint32_t crc32(uint8_t *buffer, int len, uint32_t crc)
 {
   int t;
 
@@ -175,11 +192,12 @@ int kunzip_inflate_free()
 
   return 0;
 }
-unsigned int get_alder(FILE *out)
+
+uint32_t get_alder(FILE *out)
 {
-  unsigned int s1,s2;
-  unsigned int adler;
-  int len,t,value;
+  uint32_t s1, s2;
+  uint32_t adler;
+  int len, t, value;
 
   len = ftell(out);
   fseek(out, 0, SEEK_SET);
@@ -343,23 +361,25 @@ int load_codes(
   int *hclen_code,
   struct huffman_tree_t *huffman_tree)
 {
-  int r,t,c,x;
-  int code,curr_code;
+  int r, t, c, x;
+  int code, curr_code;
   int bl_count[512];
   int next_code[512];
-  int bits,max_bits;
-  int next_leaf,curr_leaf;
+  int bits, max_bits;
+  int next_leaf, curr_leaf;
 
 #ifdef DEBUG_INFLATE
 printf("Entering load_codes()\n");
 #endif
 
   r = 0;
+
   while (r < count)
   {
     for (t = 0; t < 19; t++)
     {
-      if (hclen_code_length[t] == 0) continue;
+      if (hclen_code_length[t] == 0) { continue; }
+
       while (bitstream->bitptr < hclen_code_length[t])
       {
         bitstream->holding = reverse[getc(in)] + (bitstream->holding << 8);
@@ -392,10 +412,7 @@ printf("\n");
       else
     if (t == 16)
     {
-      if (r != 0)
-      { code = lengths[r - 1]; }
-        else
-      { code = 0; }
+      code = r == 0 ? 0 : lengths[r - 1];
 
       if (bitstream->bitptr < 2)
       {
@@ -408,7 +425,9 @@ printf("\n");
       bitstream->holding = bitstream->holding & ((1 << bitstream->bitptr) - 1);
 
       for (c = 0; c < x + 3; c++)
-      { lengths[r++] = code; }
+      {
+        lengths[r++] = code;
+      }
     }
       else
     if (t == 17)
@@ -443,7 +462,6 @@ printf("\n");
       c = x + 11;
       memset(&lengths[r], 0, sizeof(int) * c);
       r = r + c;
-
     }
       else
     {
@@ -456,10 +474,8 @@ printf("\n");
 printf("r=%d count=%d\n", r, count);
 #endif
 
-  /* time to load the codes */
-
+  // Time to load the codes.
   memset(bl_count, 0, count * sizeof(int));
-  /* memset(next_code,0,count*sizeof(int)); */
 
   max_bits = 0;
   for (t = 0; t < count; t++)
@@ -470,6 +486,7 @@ printf("r=%d count=%d\n", r, count);
 
   code = 0;
   bl_count[0] = 0;
+
   for (bits = 1; bits <= max_bits; bits++)
   {
     code = (code + bl_count[bits - 1]) << 1;
@@ -733,8 +750,7 @@ int decompress(
 {
   int code=0,len,dist;
   int t,r;
-  unsigned char *window;
-  //struct huffman_tree_t *curr_huffman_leaf;
+  uint8_t *window;
   int window_ptr;
   int curr_leaf;
 
@@ -743,27 +759,23 @@ printf("decompress()\n");
 printf("holding=%d bitptr=%d\n",bitstream->holding,bitstream->bitptr);
 #endif
 
-  /* printf("bitstream: %08x  %d\n", bitstream->holding,bitstream->bitptr); */
   reverse_bitstream(bitstream);
-  /* printf("bitstream: %08x  %d\n", bitstream->holding,bitstream->bitptr); */
 
   window_ptr = huffman->window_ptr;
   window = huffman->window;
 
-  while(1)
+  while (1)
   {
-    //curr_huffman_leaf = huffman_tree_len;
     curr_leaf = 0;
 
-    while(1)
+    while (1)
     {
       if (bitstream->bitptr <= 0)
       {
-        /* bitstream->holding += (getc(in) << bitstream->bitptr); */
-        /* bitstream->bitptr += 8; */
         bitstream->holding = getc(in);
         bitstream->bitptr = 8;
       }
+
 #ifdef DEBUG_INFLATE
 printf("%d  <%02x>  %d %d   (holding=%d  bitptr=%d)\n",
   curr_leaf,
@@ -806,7 +818,6 @@ printf("code=%d\n", code);
 
     if (code < 256)
     {
-      /* putc(code,out); */
 #ifdef DEBUG_INFLATE
 if (code >= 32 && code <= 128)
 { printf("output %d %c\n", code, code); }
@@ -874,18 +885,16 @@ fflush(stdout);
       }
         else
       {
-        //curr_huffman_leaf = huffman_tree_len;
         curr_leaf = 0;
 
-        while(1)
+        while (1)
         {
           if (bitstream->bitptr <= 0)
           {
-            /* bitstream->holding += (getc(in) << bitstream->bitptr); */
-            /* bitstream->bitptr += 8; */
             bitstream->holding = getc(in);
             bitstream->bitptr = 8;
           }
+
 #ifdef DEBUG_INFLATE
 printf("%d  <%02x>  %d %d   (holding=%d  bitptr=%d)\n",
   curr_leaf,
@@ -953,16 +962,12 @@ exit(0);
 }
 */
 
-
-/* HERE */
-
       r = window_ptr - dist;
 
 /* I would have thought the memcpy (which gets called most of the time)
    would have been a huge speed up.  I was wrong.  Maybe I'll try writing
    some inline assembly later for x86 for this */
 
-      /* if (r >= 0 && (window_ptr + len < WINDOW_SIZE)) */
       if (r >= 0 && (window_ptr + len < WINDOW_SIZE && r + len < window_ptr))
       {
         memcpy(window + window_ptr, window + r, len);
@@ -1007,13 +1012,13 @@ printf("holding=%d bitptr=%d\n",bitstream->holding,bitstream->bitptr);
 int inflate(FILE *in, FILE *out, uint32_t *checksum)
 {
 #ifndef ZIP
-  unsigned char CMF, FLG;
+  uint8_t CMF, FLG;
   uint32_t DICT;
 #endif
   struct bitstream_t bitstream;
   struct huffman_t huffman;
   int comp_method;
-  int block_len,bfinal;
+  int block_len, bfinal;
   int t;
   struct huffman_tree_t *huffman_tree_len;
   struct huffman_tree_t *huffman_tree_dist;
@@ -1072,7 +1077,7 @@ printf("FLEVEL: %d\n\n", (FLG > 6) & 3);
   bitstream.holding = 0;
   bitstream.bitptr = 0;
 
-  while(1)
+  while (1)
   {
     if (bitstream.bitptr < 3)
     {
@@ -1096,7 +1101,7 @@ printf("comp_method=%d  bfinal=%d\n", comp_method, bfinal);
 
     if (comp_method == 0)
     {
-      /* No Compression */
+      // No Compression.
       bitstream.holding = 0;
       bitstream.bitptr = 0;
 
@@ -1125,29 +1130,24 @@ printf("comp_method=%d  bfinal=%d\n", comp_method, bfinal);
       else
     if (comp_method == 2)
     {
-      /* Fixed Huffman */
+      // Fixed Huffman (the docs say this is 1, but value here is reverse).
       if (huffman_tree_len_static == NULL)
       {
         load_fixed_huffman(&huffman, &huffman_tree_len_static);
       }
+
       decompress(in, &huffman, &bitstream, huffman_tree_len_static, 0, out);
-/*
-      free(huffman_tree_len);
-      huffman_tree_len = 0;
-*/
     }
       else
     if (comp_method == 1)
     {
-      /* Dynamic Huffman */
+      // Dynamic Huffman (the docs say this is 2, but value here is reverse).
       load_dynamic_huffman(in, &huffman, &bitstream, huffman_tree_len, huffman_tree_dist);
       decompress(in, &huffman, &bitstream, huffman_tree_len, huffman_tree_dist, out);
-
     }
       else
     if (comp_method == 3)
     {
-      /* Error */
       printf("Error (inflate): unknown compression type\n");
       break;
     }
