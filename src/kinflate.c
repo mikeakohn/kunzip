@@ -38,9 +38,9 @@ struct huffman_t
   uint8_t window[WINDOW_SIZE];
   int window_ptr;
   uint32_t checksum;
-  int len[288];
-  int dist_len[33];
   int dist_huff_count;
+  int len[288 + 33];
+  int dist_len[33];
 };
 
 struct huffman_tree_t
@@ -358,8 +358,7 @@ int load_codes(
   int *lengths,
   int count,
   int *hclen_code_length,
-  int *hclen_code,
-  struct huffman_tree_t *huffman_tree)
+  int *hclen_code)
 {
   int r, t, c, x;
   int code;
@@ -475,12 +474,8 @@ printf("r=%d count=%d\n", r, count);
 }
 
 int build_table(
-  FILE *in,
-  struct bitstream_t *bitstream,
   int *lengths,
   int count,
-  int *hclen_code_length,
-  int *hclen_code,
   struct huffman_tree_t *huffman_tree)
 {
   int bl_count[512];
@@ -714,49 +709,27 @@ printf("\n");
   load_codes(
     in,
     bitstream,
-
     huffman->len,
-    hlit,
-
+    hlit + hdist,
     hclen_code_lengths,
-    hclen_code,
-    huffman_tree_len);
+    hclen_code);
 
   build_table(
-    in,
-    bitstream,
-
     huffman->len,
     hlit,
-
-    hclen_code_lengths,
-    hclen_code,
     huffman_tree_len);
 
   // load distant tables.
 
   if (hdist != 0)
   {
-    load_codes(
-      in,
-      bitstream,
-
-      huffman->dist_len,
-      hdist,
-
-      hclen_code_lengths,
-      hclen_code,
-      huffman_tree_dist);
+    // Copy any dist codes fom what was written to the end of the len
+    // codes.
+    memcpy(huffman->dist_len, huffman->len + hlit, sizeof(int) * hdist);
 
     build_table(
-      in,
-      bitstream,
-
       huffman->dist_len,
       hdist,
-
-      hclen_code_lengths,
-      hclen_code,
       huffman_tree_dist);
   }
 
