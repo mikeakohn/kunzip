@@ -334,7 +334,14 @@ printf("load_fixed_huffman()\n");
   return 0;
 }
 
-int load_codes(FILE *in, struct bitstream_t *bitstream, int *lengths, int count, int *hclen_code_length, int *hclen_code, struct huffman_tree_t *huffman_tree)
+int load_codes(
+  FILE *in,
+  struct bitstream_t *bitstream,
+  int *lengths,
+  int count,
+  int *hclen_code_length,
+  int *hclen_code,
+  struct huffman_tree_t *huffman_tree)
 {
   int r,t,c,x;
   int code,curr_code;
@@ -664,12 +671,34 @@ for (t = 0; t < 19; t++)
 printf("\n");
 #endif
 
-  /* load literal tables */
-
+  huffman->dist_huff_count = hdist;
   memset(huffman->len, 0, 288 * sizeof(int));
-  /* memset(huffman->code,0,288*sizeof(int)); */
+  memset(huffman->dist_len, 0, 33 * sizeof(int));
 
-  load_codes(in, bitstream,huffman->len, hlit, hclen_code_lengths, hclen_code, huffman_tree_len);
+  // Load literal tables.
+
+  load_codes(
+    in,
+    bitstream,
+    huffman->len,
+    hlit,
+    hclen_code_lengths,
+    hclen_code,
+    huffman_tree_len);
+
+  // load distant tables.
+
+  if (hdist != 0)
+  {
+    load_codes(
+      in,
+      bitstream,
+      huffman->dist_len,
+      hdist,
+      hclen_code_lengths,
+      hclen_code,
+      huffman_tree_dist);
+  }
 
 #ifdef DEBUG_INFLATE
 #if 0
@@ -690,21 +719,6 @@ for (t = 0; t < hlit; t++)
 #endif
 #endif
 
-  /* load distant tables */
-
-  if (hdist == 0)
-  {
-    huffman->dist_huff_count = 0;
-  }
-    else
-  {
-    huffman->dist_huff_count = hdist;
-
-    memset(huffman->dist_len, 0, 33 * sizeof(int));
-    /* memset(huffman->dist_code, 0, 33 * sizeof(int)); */
-
-    load_codes(in, bitstream, huffman->dist_len, hdist, hclen_code_lengths, hclen_code, huffman_tree_dist);
-  }
 
   return 0;
 }

@@ -21,7 +21,7 @@ me and we can work something out.
 
 #include <stdint.h>
 
-#define VERSION "Version October 17, 2023"
+#define VERSION "Version October 21, 2023"
 #define COPYRIGHT "Copyright 2005-2023 - Michael Kohn <mike@mikekohn.net>"
 
 struct zip_local_file_header_t
