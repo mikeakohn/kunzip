@@ -54,10 +54,9 @@ int main(int argc, char *argv[])
   if (i != 0)
   {
     printf("Problem decompressing\n");
+    exit(-1);
   }
 
   return 0;
 }
-
-
 

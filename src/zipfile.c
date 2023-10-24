@@ -107,7 +107,7 @@ int ch;
 
   crc=0xffffffff;
 
-  while(1)
+  while (1)
   {
     ch=getc(in);
     if (ch==EOF) break;
@@ -129,7 +129,7 @@ static int32_t copy_file(FILE *in, FILE *out, int len)
 
   t = 0;
 
-  while(t < len)
+  while (t < len)
   {
     if (t + BUFFER_SIZE < len)
     { r = BUFFER_SIZE; }
@@ -236,7 +236,7 @@ static int read_zip_header(FILE *in, struct zip_local_file_header_t *local_file_
 {
   struct zip_central_directory_t zip_central_directory;
 
-  while(1)
+  while (1)
   {
     local_file_header->signature = read_int32(in);
 
@@ -409,7 +409,7 @@ int kunzip_file(FILE *in, char *base_dir)
 
   ret_code = 0;
 
-  if (read_zip_header(in, &local_file_header) == -1) { return -1; }
+  if (read_zip_header(in, &local_file_header) == -1) { return -200; }
 
   // FIXME - Use alloca().
   local_file_header.file_name = (char *)malloc(local_file_header.file_name_length + 1);
@@ -479,8 +479,6 @@ Bit  0 -  4  Day
      5 -  8  Month
      9 - 15  Years since 1980
 
-^^^ PUKE!!!!!!!!!!!!
-
 That's MS-DOS time format btw.. which zip files use..
 
 */
@@ -539,7 +537,7 @@ int kunzip_all(char *zip_filename, char *base_dir)
   in = fopen(zip_filename, "rb");
   if (in == NULL) { return -1; }
 
-  while(1)
+  while (1)
   {
     i = kunzip_file(in, base_dir);
     if (i != 0) { break; }
@@ -547,7 +545,7 @@ int kunzip_all(char *zip_filename, char *base_dir)
 
   fclose(in);
 
-  return 0;
+  return i == -200 ? 0 : -1;
 }
 
 long kunzip_next(char *zip_filename, char *base_dir, int offset)
@@ -581,7 +579,7 @@ int kunzip_count_files(char *zip_filename)
 
   count = 0;
 
-  while(1)
+  while (1)
   {
     i = read_zip_header(in, &local_file_header);
     if (i == -1) break;
@@ -609,7 +607,7 @@ int kunzip_get_offset_by_number(char *zip_filename, int file_count)
 
   count = 0;
 
-  while(1)
+  while (1)
   {
     curr = ftell(in);
     if (count == file_count) { break; }
@@ -638,13 +636,17 @@ int kunzip_get_offset_by_number(char *zip_filename, int file_count)
            set to 0 if it should be case insensitive
 */
 
-int kunzip_get_offset_by_name(char *zip_filename, char *compressed_filename, int match_flags, int skip_offset)
+int kunzip_get_offset_by_name(
+  char *zip_filename,
+  char *compressed_filename,
+  int match_flags,
+  int skip_offset)
 {
   FILE *in;
   struct zip_local_file_header_t local_file_header;
-  int i=0,curr;
-  char *name=0;
-  int name_size=0;
+  int i = 0, curr;
+  char *name = 0;
+  int name_size = 0;
   long marker;
 
   in = fopen(zip_filename, "rb");
@@ -652,7 +654,7 @@ int kunzip_get_offset_by_name(char *zip_filename, char *compressed_filename, int
 
   if (skip_offset != -1) { fseek(in, skip_offset, SEEK_SET); }
 
-  while(1)
+  while (1)
   {
     curr = ftell(in);
     i = read_zip_header(in,&local_file_header);
@@ -704,10 +706,7 @@ int kunzip_get_offset_by_name(char *zip_filename, char *compressed_filename, int
 
   fclose(in);
 
-  if (i != -1)
-  { return curr; }
-    else
-  { return -1; }
+  return i == -1 ? -1 : curr;
 }
 
 int kunzip_get_name(char *zip_filename, char *name, int offset)

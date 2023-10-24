@@ -462,7 +462,7 @@ printf("\n");
       else
     {
       printf("Error in bitstream reading in literal code length %d\n", t);
-      exit(0);
+      return -1;
     }
   }
 
